@@ -3,10 +3,14 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, PositiveInt
 
+from app.core.constants import (DESCRIPTION_MIN_LENGTH, STRING_MIN_LENGTH,
+                                STRING_MAX_LENGTH)
+
 
 class CharityProjectBase(BaseModel):
-    name: str = Field(..., min_length=5, max_length=100)
-    description: str = Field(..., min_length=10)
+    name: str = Field(..., min_length=STRING_MIN_LENGTH,
+                      max_length=STRING_MAX_LENGTH)
+    description: str = Field(..., min_length=DESCRIPTION_MIN_LENGTH)
     full_amount: PositiveInt
     model_config = ConfigDict(extra='forbid')
 
@@ -18,12 +22,12 @@ class CharityProjectCreate(CharityProjectBase):
 class CharityProjectUpdate(CharityProjectBase):
     name: Optional[str] = Field(
         None,
-        min_length=5,
-        max_length=100,
+        min_length=STRING_MIN_LENGTH,
+        max_length=STRING_MAX_LENGTH,
     )
     description: Optional[str] = Field(
         None,
-        min_length=10,
+        min_length=DESCRIPTION_MIN_LENGTH,
     )
     full_amount: Optional[PositiveInt] = None
 

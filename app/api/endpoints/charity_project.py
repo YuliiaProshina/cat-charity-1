@@ -1,12 +1,12 @@
 from datetime import datetime
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.validators import (check_charity_project_exists,
                                 check_closed_project_or_invested_project,
-                                check_name_duplicate, check_total_amount)
+                                check_name_duplicate)
 from app.core.db import get_async_session
 from app.crud.charity_project import charity_project_crud
 from app.crud.donation import donation_crud
@@ -59,12 +59,20 @@ async def partially_update_charity_project(
     charity_project = await check_charity_project_exists(project_id, session)
     if charity_project.fully_invested:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail='Закрытый проект нельзя редактировать!',
         )
-    if obj_in.name is not None:
-        await check_name_duplicate(obj_in.name, session, charity_project.id)
-    await check_total_amount(charity_project, obj_in.full_amount)
+    if obj_in.name is not None and obj_in.name != charity_project.name:
+        await check_name_duplicate(obj_in.name, session)
+    if (obj_in.full_amount is not None and
+            obj_in.full_amount < charity_project.invested_amount):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                'Нельзя установить значение full_amount меньше '
+                'уже вложенной суммы.'
+            ),
+        )
     charity_project = await charity_project_crud.update(charity_project,
                                                         obj_in, session)
     if charity_project.full_amount == charity_project.invested_amount:

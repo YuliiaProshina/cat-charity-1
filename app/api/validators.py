@@ -1,4 +1,4 @@
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.charity_project import charity_project_crud
@@ -8,15 +8,13 @@ from app.models.charity_project import CharityProject
 async def check_name_duplicate(
         charity_project_name: str,
         session: AsyncSession,
-        current_charity_project_id: int | None = None
 ) -> None:
     charity_project_id = await \
         (charity_project_crud.get_charity_project_id_by_name(
             charity_project_name, session))
-    if (charity_project_id is not None and
-            charity_project_id != current_charity_project_id):
+    if charity_project_id is not None:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail='Проект с таким именем уже существует!',
         )
 
@@ -29,23 +27,10 @@ async def check_charity_project_exists(
                                                      session)
     if charity_project is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail='Благотворительный проект не найден!'
         )
     return charity_project
-
-
-async def check_total_amount(
-        charity_project: CharityProject,
-        new_full_amount: int | None,
-) -> None:
-    if (new_full_amount is not None and
-            new_full_amount < charity_project.invested_amount):
-        raise HTTPException(
-            status_code=400,
-            detail='Нелья установить значение full_amount меньше'
-                   ' уже вложенной суммы.'
-        )
 
 
 async def check_closed_project_or_invested_project(
@@ -57,6 +42,6 @@ async def check_closed_project_or_invested_project(
     if (charity_project.fully_invested is True or
             charity_project.invested_amount > 0):
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail='В проект были внесены средства, не подлежит удалению!'
         )

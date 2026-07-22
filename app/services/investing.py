@@ -8,6 +8,7 @@ InvestmentObject = Union[CharityProject, Donation]
 
 
 def close_investment_object(obj: InvestmentObject) -> None:
+    """Проверяет закрытые проекты и сохраняет дату закрытия."""
     obj.fully_invested = True
     obj.close_date = datetime.now()
 
@@ -16,6 +17,10 @@ def invest(
     target: InvestmentObject,
     sources: Iterable[InvestmentObject],
 ) -> InvestmentObject:
+    """Распределяет донаты между проектами.
+    Донаты последовательно переносятся из 'source' в 'target'.
+    Полностью инвестированные проекты закрываются автоматически.
+    """
     for source in sources:
         target_free_amount = target.full_amount - target.invested_amount
         source_free_amount = source.full_amount - source.invested_amount

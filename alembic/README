@@ -1,1 +1,22 @@
-Generic single-database configuration with an async dbapi.
+## В проекте используется асинхронное подключение к базе данных. Для управления миграциями применяется Alembic.
+
+## Основные команды:
+
+`alembic upgrade head` — применить все миграции до последней версии.
+
+`alembic revision --autogenerate -m "Описание изменений"` — создать новую миграцию после изменения моделей.
+
+`alembic current` — проверить текущую миграцию.
+
+`alembic history` — посмотреть историю миграций.
+
+`alembic heads` — посмотреть последнюю доступную миграцию.
+
+`alembic downgrade -1` — откатить последнюю миграцию.
+
+`alembic downgrade base` — откатить все миграции.
+
+## Перед созданием новой миграции рекомендуется выполнить:
+
+```bash
+alembic upgrade head
